@@ -1,22 +1,51 @@
 'use client';
 
 import { useState } from 'react';
-import { Activity, Plus, Save, ActivitySquare, CheckCircle2 } from 'lucide-react';
+import { Save, ActivitySquare, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { saveIndicator } from '@/app/actions/indicadores';
 
 export default function IndicadoresPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [formData, setFormData] = useState({
+        fecha: new Date().toISOString().split('T')[0],
+        consultas: '',
+        emergencias: '',
+        ocupacion: '',
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        // Simular guardado
-        setTimeout(() => {
+        setShowError('');
+        setShowSuccess(false);
+
+        try {
+            const result = await saveIndicator({
+                date: formData.fecha,
+                outpatientConsultations: parseInt(formData.consultas) || 0,
+                emergencyAttendances: parseInt(formData.emergencias) || 0,
+                occupancyRate: formData.ocupacion || '0',
+            });
+
+            if (result.success) {
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
+            } else {
+                setShowError(result.error || 'Ocurrió un error al guardar.');
+            }
+        } catch (err: any) {
+            setShowError(err.message || 'Ocurrió un error general.');
+        } finally {
             setIsSaving(false);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
-        }, 1500);
+        }
     };
 
     return (
@@ -50,7 +79,9 @@ export default function IndicadoresPage() {
                             <input
                                 type="date"
                                 id="fecha"
-                                defaultValue={new Date().toISOString().split('T')[0]}
+                                required
+                                value={formData.fecha}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-hospital-blue)] focus:border-transparent dark:border-slate-700 transition"
                             />
                         </div>
@@ -62,8 +93,11 @@ export default function IndicadoresPage() {
                             <input
                                 type="number"
                                 id="consultas"
+                                required
                                 placeholder="Ej. 1450"
                                 min="0"
+                                value={formData.consultas}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-hospital-blue)] focus:border-transparent dark:border-slate-700 transition"
                             />
                         </div>
@@ -75,8 +109,11 @@ export default function IndicadoresPage() {
                             <input
                                 type="number"
                                 id="emergencias"
+                                required
                                 placeholder="Ej. 380"
                                 min="0"
+                                value={formData.emergencias}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-hospital-blue)] focus:border-transparent dark:border-slate-700 transition"
                             />
                         </div>
@@ -88,15 +125,25 @@ export default function IndicadoresPage() {
                             <input
                                 type="number"
                                 id="ocupacion"
+                                required
                                 placeholder="Ej. 85"
                                 min="0"
                                 max="100"
+                                step="0.01"
+                                value={formData.ocupacion}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-hospital-blue)] focus:border-transparent dark:border-slate-700 transition"
                             />
                         </div>
                     </div>
 
                     <div className="flex items-center justify-end space-x-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        {showError && (
+                            <p className="text-rose-500 text-sm font-medium flex-1">
+                                {showError}
+                            </p>
+                        )}
+
                         <AnimatePresence>
                             {showSuccess && (
                                 <motion.div

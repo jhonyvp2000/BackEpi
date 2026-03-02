@@ -12,6 +12,7 @@ export default {
     dialect: "postgresql",
     schema: "./src/db/schema.ts",
     out: "./src/db/migrations",
+    tablesFilter: ["epi_*"], // IMPORTANT: Only manage tables that start with epi_ (ignores BackRRHH tables)
     dbCredentials: {
         url: process.env.DATABASE_URL || "",
     },

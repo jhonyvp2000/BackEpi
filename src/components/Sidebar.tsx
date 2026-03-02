@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Activity, BarChart3, FileText, Home, ShieldAlert } from 'lucide-react';
+import { Activity, BarChart3, FileText, Home, ShieldAlert, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useSession, signOut } from 'next-auth/react';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
@@ -15,6 +16,7 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
 
     return (
         <div className="flex h-full w-64 flex-col bg-white border-r border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-800">
@@ -59,6 +61,33 @@ export function Sidebar() {
                         );
                     })}
                 </nav>
+            </div>
+
+            {/* User Profile & Logout */}
+            <div className="mt-auto border-t border-slate-200 dark:border-slate-800 p-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[var(--color-hospital-blue)] shrink-0">
+                            <User className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col truncate">
+                            <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                {session?.user?.name || 'Usuario'}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 capitalize truncate">
+                                {(session?.user as any)?.lastname || 'Epidemiología'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+                        title="Cerrar sesión"
+                    >
+                        <LogOut className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
         </div>
     );
