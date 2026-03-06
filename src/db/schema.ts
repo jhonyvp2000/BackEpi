@@ -65,59 +65,40 @@ export const userSystemRoles = pgTable("user_system_roles", {
 
 
 // ==========================================
-// Módulo 1: Indicadores Hospitalarios Diarios
+// Módulo 1: Indicadores Hospitalarios Mensuales (PDFs)
 // ==========================================
-export const dailyIndicators = pgTable("epi_daily_indicators", {
+export const monthlyIndicators = pgTable("epi_monthly_indicators", {
     id: serial("id").primaryKey(),
-    date: date("date").notNull().unique(), // Sólo un registro por día
-    outpatientConsultations: integer("outpatient_consultations").default(0), // Consultas Externas
-    emergencyAttendances: integer("emergency_attendances").default(0), // Atenciones en Emergencia
-    surgeries: integer("surgeries").default(0), // Intervenciones Quirúrgicas
-    occupancyRate: numeric("occupancy_rate", { precision: 5, scale: 2 }).default('0'), // % Ocupación
-    notes: text("notes"), // Observaciones del día
-    createdBy: text("created_by"), // Usuario que registró
+    tab: varchar("tab", { length: 50 }).notNull(), // 'rendimiento' | 'analisis'
+    month: varchar("month", { length: 20 }).notNull(), // Ej. 'Enero'
+    year: integer("year").notNull(), // Ej. 2026
+    documentUrl: text("document_url").notNull(), // URL del archivo PDF en Supabase
+    createdBy: text("created_by"), // DNI o ID del usuario que subió el reporte
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // ==========================================
-// Módulo 2: Sala Situacional Virtual (Ej. Dengue)
+// Módulo 2: Sala Situacional Semanal (PDFs por categoría)
 // ==========================================
-export const epidemiologicalWeeks = pgTable("epi_weeks", {
+export const weeklySituational = pgTable("epi_weekly_situational", {
     id: serial("id").primaryKey(),
+    tab: varchar("tab", { length: 50 }).notNull(), // 'metaxenicas' | 'materno' | 'respiratorio'
     weekNumber: integer("week_number").notNull(), // Ej. 45
     year: integer("year").notNull(), // Ej. 2026
-    startDate: date("start_date").notNull(),
-    endDate: date("end_date").notNull(),
+    documentUrl: text("document_url").notNull(), // URL del archivo PDF en Supabase
+    createdBy: text("created_by"), // Usuario que subió el reporte
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const dengueRecords = pgTable("epi_dengue_records", {
-    id: serial("id").primaryKey(),
-    weekId: integer("week_id").references(() => epidemiologicalWeeks.id).notNull(),
-    confirmedCases: integer("confirmed_cases").default(0).notNull(),
-    alarmSignsCases: integer("alarm_signs_cases").default(0).notNull(),
-    hospitalizedCases: integer("hospitalized_cases").default(0).notNull(),
-    deaths: integer("deaths").default(0).notNull(),
-    notes: text("notes"),
-    createdBy: text("created_by"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 // ==========================================
-// Módulo 3: Boletines Epidemiológicos
+// Módulo 3: Boletines Mensuales (PDFs por categoría)
 // ==========================================
-export const epidemiologicalBulletins = pgTable("epi_bulletins", {
+export const monthlyBulletins = pgTable("epi_monthly_bulletins", {
     id: serial("id").primaryKey(),
-    weekId: integer("week_id").references(() => epidemiologicalWeeks.id).notNull(),
-    volume: text("volume").notNull(), // Ej. "Vol. 45"
-    title: text("title").notNull(), // Título descriptivo
-    fileUrl: text("file_url").notNull(), // URL de descarga (Supabase Storage u otro)
-    downloads: integer("downloads").default(0).notNull(), // Contador de descargas
-    isPublished: boolean("is_published").default(true).notNull(),
-    publishedAt: timestamp("published_at"),
-    createdBy: text("created_by"),
+    tab: varchar("tab", { length: 50 }).notNull(), // 'epidemiologico' | 'infecciones' | 'estadistico'
+    month: varchar("month", { length: 20 }).notNull(), // Ej. 'Enero'
+    year: integer("year").notNull(), // Ej. 2026
+    documentUrl: text("document_url").notNull(), // URL del archivo PDF en Supabase
+    createdBy: text("created_by"), // Usuario que subió el reporte
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

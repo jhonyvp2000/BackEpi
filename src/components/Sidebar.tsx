@@ -16,7 +16,11 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+
+    if (pathname === '/login' || status === 'unauthenticated') {
+        return null;
+    }
 
     return (
         <div className="flex h-full w-64 flex-col bg-white border-r border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-800">
